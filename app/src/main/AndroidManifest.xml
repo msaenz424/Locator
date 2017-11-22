@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.migcavero.pushcartlocator_seller">
+    package="com.migcavero.pushcartlocator.seller">
 
     <application
         android:allowBackup="true"
@@ -11,7 +11,7 @@
         android:theme="@style/AppTheme">
 
         <activity
-            android:name=".LaunchScreen"
+            android:name="com.migcavero.pushcartlocator.seller.LaunchScreen"
             android:theme="@style/SplashTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -20,7 +20,7 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".MainActivity" />
+        <activity android:name="com.migcavero.pushcartlocator.seller.MainActivity" />
     </application>
 
 </manifest>

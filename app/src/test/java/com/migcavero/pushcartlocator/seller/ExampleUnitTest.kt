@@ -1,4 +1,4 @@
-package com.migcavero.pushcartlocator_seller
+package com.migcavero.pushcartlocator.seller
 
 import org.junit.Test
 

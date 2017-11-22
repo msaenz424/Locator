@@ -1,7 +1,8 @@
-package com.migcavero.pushcartlocator_seller
+package com.migcavero.pushcartlocator.seller
 
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import com.migcavero.pushcartlocator.seller.R
 
 class MainActivity : AppCompatActivity() {
 
