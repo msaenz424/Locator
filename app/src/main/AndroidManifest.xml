@@ -9,9 +9,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-
         <activity
-            android:name="com.migcavero.pushcartlocator.seller.LaunchScreen"
+            android:name=".view.LaunchScreen"
             android:theme="@style/SplashTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -19,8 +18,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-        <activity android:name="com.migcavero.pushcartlocator.seller.MainActivity" />
+        <activity android:name=".view.MainActivity" />
+        <activity android:name=".PhoneAuthActivity" />
     </application>
 
 </manifest>
