@@ -28,8 +28,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private lateinit var mFirebaseAuth: FirebaseAuth
     private lateinit var mAuthStateListener: FirebaseAuth.AuthStateListener
-    private var mMap: GoogleMap? = null
-    private var mFusedLocationClient: FusedLocationProviderClient? = null
+    private lateinit var mMap: GoogleMap
+    private lateinit var mFusedLocationClient: FusedLocationProviderClient
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -71,24 +71,22 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 
-    override fun onMapReady(map: GoogleMap?) {
+    override fun onMapReady(map: GoogleMap) {
         mMap = map
 
-        if (mMap != null) {
-            val permission = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+        val permission = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
 
-            if (permission == PackageManager.PERMISSION_GRANTED) {
-                updateLocationUI()
-            } else {
-                requestPermission()
-            }
+        if (permission == PackageManager.PERMISSION_GRANTED) {
+            updateLocationUI()
+        } else {
+            requestPermission()
         }
     }
 
     /**
      * Displays the Firebase's default UI login screen
      */
-    fun displayLoginMethods() {
+    private fun displayLoginMethods() {
         startActivityForResult(
                 AuthUI.getInstance()
                         .createSignInIntentBuilder()
@@ -125,26 +123,25 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
      * Display the user's last know location
      */
     private fun updateLocationUI() {
-        if (mMap != null) {
-            try {
-                mMap!!.isMyLocationEnabled = true
-                mMap!!.uiSettings.isMyLocationButtonEnabled = true
-                mFusedLocationClient!!.lastLocation
-                        .addOnSuccessListener(this) { location ->
-                            // Got last known location. In some rare situations this can be null.
-                            if (location != null) {
-                                // Logic to handle location object
-                                val latitude = location.latitude
-                                val longitude = location.longitude
-                                val coordinate = LatLng(latitude, longitude)
-                                mMap!!.addMarker(MarkerOptions().position(coordinate))
-                                mMap!!.moveCamera(CameraUpdateFactory.newLatLng(coordinate))
-                                mMap!!.animateCamera(CameraUpdateFactory.zoomTo(ZOOM_LEVEL.toFloat()), ZOOM_DURATION, null)
-                            }
+        try {
+            mMap.isMyLocationEnabled = true
+            mMap.uiSettings.isMyLocationButtonEnabled = true
+            mFusedLocationClient.lastLocation
+                    .addOnSuccessListener(this) { location ->
+                        // Got last known location. In some rare situations this can be null.
+                        if (location != null) {
+                            // Logic to handle location object
+                            val latitude = location.latitude
+                            val longitude = location.longitude
+                            val coordinate = LatLng(latitude, longitude)
+                            mMap.addMarker(MarkerOptions().position(coordinate))
+                            mMap.moveCamera(CameraUpdateFactory.newLatLng(coordinate))
+                            mMap.animateCamera(CameraUpdateFactory.zoomTo(ZOOM_LEVEL.toFloat()), ZOOM_DURATION, null)
                         }
-            } catch (e: SecurityException) {
-                Log.e("Exception: %s", e.message)
-            }
+                    }
+        } catch (e: SecurityException) {
+            Log.e("Exception: %s", e.message)
         }
     }
+
 }
