@@ -17,8 +17,4 @@ interface MainView {
      */
     fun initMap()
 
-    /**
-     * Display user's last known location
-     */
-    fun displayLocation()
 }

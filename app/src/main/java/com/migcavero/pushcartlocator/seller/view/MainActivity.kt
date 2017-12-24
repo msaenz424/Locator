@@ -1,6 +1,7 @@
 package com.migcavero.pushcartlocator.seller.view
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -11,24 +12,30 @@ import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 import android.util.Log
 import com.firebase.ui.auth.AuthUI
-import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationServices
 import com.migcavero.pushcartlocator.seller.BuildConfig
 import com.migcavero.pushcartlocator.seller.R
 import java.util.*
 import com.google.android.gms.maps.*
 import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.MarkerOptions
 import com.migcavero.pushcartlocator.seller.presenter.MainPresenterImpl
-import com.google.android.gms.location.LocationSettingsRequest
-import com.google.android.gms.location.LocationRequest
 import android.content.IntentSender
+import android.location.Location
+import com.google.android.gms.common.ConnectionResult
+import com.google.android.gms.common.api.GoogleApiClient
 import com.google.android.gms.common.api.ResolvableApiException
+import com.google.android.gms.location.*
 
-class MainActivity : AppCompatActivity(), MainView, OnMapReadyCallback {
+class MainActivity : AppCompatActivity(), MainView,
+        OnMapReadyCallback,
+        GoogleApiClient.ConnectionCallbacks,
+        GoogleApiClient.OnConnectionFailedListener,
+        LocationListener {
 
-    private val ZOOM_LEVEL = 12
-    private val ZOOM_DURATION = 2000
+    private lateinit var mGoogleApiClient: GoogleApiClient
+    private lateinit var mLastLocation: Location
+    private lateinit var mLocationRequest: LocationRequest
+
+    private val ZOOM_LEVEL = 15
     private val PERMISSION_REQUEST_CODE = 101
     private val SETTINGS_REQUEST_CODE = 102
     private val RC_SIGN_IN = 123
@@ -42,6 +49,7 @@ class MainActivity : AppCompatActivity(), MainView, OnMapReadyCallback {
 
         mMainPresent = MainPresenterImpl(this)
         mMainPresent.onCreate()
+        buildGoogleApiClient()
     }
 
     override fun onResume() {
@@ -50,8 +58,15 @@ class MainActivity : AppCompatActivity(), MainView, OnMapReadyCallback {
     }
 
     override fun onPause() {
-        super.onPause()
         mMainPresent.onPause()
+        super.onPause()
+    }
+
+    override fun onStop() {
+        if (mGoogleApiClient.isConnected) {
+            mGoogleApiClient.disconnect()
+        }
+        super.onStop()
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
@@ -60,8 +75,7 @@ class MainActivity : AppCompatActivity(), MainView, OnMapReadyCallback {
                 if (grantResults.isEmpty() || grantResults[0] == PackageManager.PERMISSION_DENIED) {
                     finish()
                 } else {
-                    Log.d("onRequestPermissionsRes", "permission granted, calling initMap")
-                    initMap()
+                    requestLocationSettings()
                 }
             }
         }
@@ -71,17 +85,53 @@ class MainActivity : AppCompatActivity(), MainView, OnMapReadyCallback {
         when (requestCode) {
             SETTINGS_REQUEST_CODE -> {
                 if (resultCode == Activity.RESULT_OK) {
-                    Log.d("onActivityResult", "resultCode = OK, calling initMap")
                     initMap()
                 }
             }
         }
     }
 
+    @SuppressLint("MissingPermission")
     override fun onMapReady(googleMap: GoogleMap) {
-        Log.d("onMapReady", "map ready, calling displayLocation")
         mGoogleMap = googleMap
-        displayLocation()
+        mGoogleApiClient.connect()
+        mGoogleMap.isMyLocationEnabled = true
+        mGoogleMap.uiSettings.isMyLocationButtonEnabled = true
+    }
+
+    @SuppressLint("MissingPermission")
+    override fun onConnected(bundle: Bundle?) {
+        mLocationRequest = LocationRequest()
+        mLocationRequest = createLocationRequest()
+        if (mGoogleApiClient.isConnected){
+            LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this)
+        }
+    }
+
+    @Synchronized
+    private fun buildGoogleApiClient() {
+        mGoogleApiClient = GoogleApiClient.Builder(this)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .addApi(LocationServices.API)
+                .build()
+    }
+
+    override fun onConnectionSuspended(p0: Int) {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun onConnectionFailed(p0: ConnectionResult) {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun onLocationChanged(location: Location) {
+        mLastLocation = location
+        val latitude = location.latitude
+        val longitude = location.longitude
+        val coordinate = LatLng(latitude, longitude)
+        mGoogleMap.moveCamera(CameraUpdateFactory.newLatLng(coordinate))
+        mGoogleMap.animateCamera(CameraUpdateFactory.zoomTo(ZOOM_LEVEL.toFloat()))
     }
 
     override fun displayLoginMethods() {
@@ -100,41 +150,9 @@ class MainActivity : AppCompatActivity(), MainView, OnMapReadyCallback {
         if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 requestPermissions(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), PERMISSION_REQUEST_CODE)
-                Log.d("requestPermission", "permission not granted")
             }
         } else {
-            Log.d("requestPermission", "permission granted, calling requestLocationSettings")
             requestLocationSettings()
-        }
-    }
-
-    override fun displayLocation() {
-        val mFusedLocationClient: FusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
-        try {
-            mGoogleMap.isMyLocationEnabled = true
-            mGoogleMap.uiSettings.isMyLocationButtonEnabled = true
-            mFusedLocationClient.lastLocation
-                    .addOnSuccessListener(this) { location ->
-                        // Got last known location. In some rare situations this can be null.
-                        if (location != null) {
-                            Log.d("displayLocation", "location not null")
-                            // Logic to handle location object
-                            val latitude = location.latitude
-                            val longitude = location.longitude
-                            val coordinate = LatLng(latitude, longitude)
-                            mGoogleMap.addMarker(MarkerOptions().position(coordinate))
-                            mGoogleMap.moveCamera(CameraUpdateFactory.newLatLng(coordinate))
-                            mGoogleMap.animateCamera(CameraUpdateFactory.zoomTo(ZOOM_LEVEL.toFloat()), ZOOM_DURATION, null)
-                        } else {
-                            /** TODO needs to be improved. Location is null the first time map is initialized 
-                             *  initMap shouldn't be necessary here
-                             * */
-                            initMap()
-                            Log.d("displayLocation", "location = null")
-                        }
-                    }
-        } catch (e: SecurityException) {
-            Log.e("Exception: %s", e.message)
         }
     }
 
@@ -142,7 +160,6 @@ class MainActivity : AppCompatActivity(), MainView, OnMapReadyCallback {
      * Initiates Google Map. Once it's ready it calls the onMapReady method
      */
     override fun initMap() {
-        Log.d("initMap", "initializing map")
         val mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
     }
@@ -165,7 +182,6 @@ class MainActivity : AppCompatActivity(), MainView, OnMapReadyCallback {
             // All location settings are satisfied. The client can initialize
             // location requests here.
             // ...
-            Log.d("requestLocationSettings", "task success")
             initMap()
         }
 
@@ -174,7 +190,6 @@ class MainActivity : AppCompatActivity(), MainView, OnMapReadyCallback {
                 // Location settings are not satisfied, but this can be fixed
                 // by showing the user a dialog.
                 try {
-                    Log.d("requestLocationSettings", "task fail, calling startResolutionForResult")
                     // Show the dialog by calling startResolutionForResult(),
                     // and check the result in onActivityResult().
                     e.startResolutionForResult(this@MainActivity, SETTINGS_REQUEST_CODE)
