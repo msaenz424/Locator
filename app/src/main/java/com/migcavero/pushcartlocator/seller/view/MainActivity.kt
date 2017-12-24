@@ -31,10 +31,6 @@ class MainActivity : AppCompatActivity(), MainView,
         GoogleApiClient.OnConnectionFailedListener,
         LocationListener {
 
-    private lateinit var mGoogleApiClient: GoogleApiClient
-    private lateinit var mLastLocation: Location
-    private lateinit var mLocationRequest: LocationRequest
-
     private val ZOOM_LEVEL = 15
     private val PERMISSION_REQUEST_CODE = 101
     private val SETTINGS_REQUEST_CODE = 102
@@ -42,6 +38,9 @@ class MainActivity : AppCompatActivity(), MainView,
 
     private lateinit var mMainPresent: MainPresenterImpl
     private lateinit var mGoogleMap: GoogleMap
+    private lateinit var mGoogleApiClient: GoogleApiClient
+    private lateinit var mLastLocation: Location
+    private lateinit var mLocationRequest: LocationRequest
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -63,6 +62,7 @@ class MainActivity : AppCompatActivity(), MainView,
     }
 
     override fun onStop() {
+        mMainPresent.onStop()
         if (mGoogleApiClient.isConnected) {
             mGoogleApiClient.disconnect()
         }
@@ -132,6 +132,7 @@ class MainActivity : AppCompatActivity(), MainView,
         val coordinate = LatLng(latitude, longitude)
         mGoogleMap.moveCamera(CameraUpdateFactory.newLatLng(coordinate))
         mGoogleMap.animateCamera(CameraUpdateFactory.zoomTo(ZOOM_LEVEL.toFloat()))
+        mMainPresent.onLocationChanged(location)
     }
 
     override fun displayLoginMethods() {

@@ -1,5 +1,6 @@
 package com.migcavero.pushcartlocator.seller.presenter
 
+import android.location.Location
 import com.migcavero.pushcartlocator.seller.source.MainInteractor
 import com.migcavero.pushcartlocator.seller.source.MainInteractorImpl
 import com.migcavero.pushcartlocator.seller.view.MainView
@@ -21,12 +22,20 @@ class MainPresenterImpl constructor(mainView: MainView) : MainPresenter, MainInt
         mMainInteractor.removeAuthStateListener()
     }
 
+    override fun onStop() {
+        mMainInteractor.removeLocation()
+    }
+
     override fun onAuthenticationSuccess() {
         mMainView.requestPermission()
     }
 
     override fun onAuthenticationFail() {
         mMainView.displayLoginMethods()
+    }
+
+    override fun onLocationChanged(location: Location) {
+        mMainInteractor.updateLocation(location)
     }
 
 }
