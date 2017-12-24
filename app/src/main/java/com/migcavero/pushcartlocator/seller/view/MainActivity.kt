@@ -83,6 +83,13 @@ class MainActivity : AppCompatActivity(), MainView,
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         when (requestCode) {
+            RC_SIGN_IN -> {
+                if(resultCode == Activity.RESULT_OK){
+                    mMainPresent.onCreate()
+                } else {
+                    finish()
+                }
+            }
             SETTINGS_REQUEST_CODE -> {
                 if (resultCode == Activity.RESULT_OK) {
                     initMap()
