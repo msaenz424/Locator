@@ -20,6 +20,8 @@ import com.google.android.gms.maps.model.LatLng
 import com.migcavero.pushcartlocator.seller.presenter.MainPresenterImpl
 import android.content.IntentSender
 import android.location.Location
+import android.view.Menu
+import android.view.MenuItem
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.api.GoogleApiClient
 import com.google.android.gms.common.api.ResolvableApiException
@@ -67,6 +69,21 @@ class MainActivity : AppCompatActivity(), MainView,
             mGoogleApiClient.disconnect()
         }
         super.onStop()
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.main_menu, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.action_sign_out -> {
+                AuthUI.getInstance().signOut(this)
+                return true
+            }
+        }
+        return super.onOptionsItemSelected(item)
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
