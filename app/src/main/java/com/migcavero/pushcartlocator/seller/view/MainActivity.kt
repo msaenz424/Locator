@@ -167,6 +167,7 @@ class MainActivity : AppCompatActivity(), MainView,
                         .setAvailableProviders(
                                 Arrays.asList<AuthUI.IdpConfig>(AuthUI.IdpConfig.Builder(AuthUI.FACEBOOK_PROVIDER).build(),
                                         AuthUI.IdpConfig.Builder(AuthUI.PHONE_VERIFICATION_PROVIDER).build()))
+                        .setTheme(R.style.LoginTheme)
                         .build(),
                 RC_SIGN_IN)
     }
