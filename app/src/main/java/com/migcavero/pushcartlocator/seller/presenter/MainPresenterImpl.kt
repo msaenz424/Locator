@@ -22,7 +22,11 @@ class MainPresenterImpl constructor(mainView: MainView) : MainPresenter, MainInt
         mMainInteractor.removeAuthStateListener()
     }
 
-    override fun onStop() {
+    override fun onLocationChanged(location: Location) {
+        mMainInteractor.updateLocation(location)
+    }
+
+    override fun onVisibilitySwitchOff() {
         mMainInteractor.removeLocation()
     }
 
@@ -32,10 +36,6 @@ class MainPresenterImpl constructor(mainView: MainView) : MainPresenter, MainInt
 
     override fun onAuthenticationFail() {
         mMainView.displayLoginMethods()
-    }
-
-    override fun onLocationChanged(location: Location) {
-        mMainInteractor.updateLocation(location)
     }
 
 }

@@ -5,4 +5,7 @@
     <string name="text_location_permission">In order for the app to function, it needs to detect your location.</string>
     <string name="ok">ok</string>
     <string name="action_sign_out">Sign out</string>
+    <string name="location">My visibility</string>
+    <string name="visibility_on_message">Customers can see you now</string>
+    <string name="visibility_off_message">You are not visible now</string>
 </resources>

@@ -3,4 +3,5 @@
     <dimen name="switch_location_text_size">16sp</dimen>
     <dimen name="switch_location_margin">8dp</dimen>
     <dimen name="switch_location_padding">16dp</dimen>
+    <dimen name="standard_padding">16dp</dimen>
 </resources>

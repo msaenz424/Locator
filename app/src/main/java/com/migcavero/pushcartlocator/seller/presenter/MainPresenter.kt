@@ -10,8 +10,8 @@ interface MainPresenter {
 
     fun onPause()
 
-    fun onStop()
-
     fun onLocationChanged(location: Location)
+
+    fun onVisibilitySwitchOff()
 
 }

@@ -45,5 +45,9 @@ dependencies {
 
     // GeoFire
     compile 'com.firebase:geofire-android:2.2.0'
+
+    // Anko Commons - Dialogs (Snackbar)
+    compile "org.jetbrains.anko:anko-commons:$anko_version"
+    compile "org.jetbrains.anko:anko-design:$anko_version"
 }
 apply plugin: 'com.google.gms.google-services'

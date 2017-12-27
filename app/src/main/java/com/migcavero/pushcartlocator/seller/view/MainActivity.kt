@@ -26,6 +26,8 @@ import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.api.GoogleApiClient
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.*
+import kotlinx.android.synthetic.main.activity_main.*
+import org.jetbrains.anko.design.longSnackbar
 
 class MainActivity : AppCompatActivity(), MainView,
         OnMapReadyCallback,
@@ -48,6 +50,17 @@ class MainActivity : AppCompatActivity(), MainView,
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        visibility_switch.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) {
+                connectGoogleApiClient()
+                longSnackbar(main_linear_layout , R.string.visibility_on_message)
+            } else {
+                mMainPresent.onVisibilitySwitchOff()
+                disconnectGoogleApiClient()
+                longSnackbar(main_linear_layout , R.string.visibility_off_message)
+            }
+        }
+
         mMainPresent = MainPresenterImpl(this)
         mMainPresent.onCreate()
         buildGoogleApiClient()
@@ -61,14 +74,6 @@ class MainActivity : AppCompatActivity(), MainView,
     override fun onPause() {
         mMainPresent.onPause()
         super.onPause()
-    }
-
-    override fun onStop() {
-        mMainPresent.onStop()
-        if (mGoogleApiClient.isConnected) {
-            mGoogleApiClient.disconnect()
-        }
-        super.onStop()
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -101,7 +106,7 @@ class MainActivity : AppCompatActivity(), MainView,
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         when (requestCode) {
             RC_SIGN_IN -> {
-                if(resultCode == Activity.RESULT_OK){
+                if (resultCode == Activity.RESULT_OK) {
                     mMainPresent.onCreate()
                 } else {
                     finish()
@@ -118,7 +123,7 @@ class MainActivity : AppCompatActivity(), MainView,
     @SuppressLint("MissingPermission")
     override fun onMapReady(googleMap: GoogleMap) {
         mGoogleMap = googleMap
-        mGoogleApiClient.connect()
+        connectGoogleApiClient()
         mGoogleMap.isMyLocationEnabled = true
         mGoogleMap.uiSettings.isMyLocationButtonEnabled = true
     }
@@ -127,8 +132,11 @@ class MainActivity : AppCompatActivity(), MainView,
     override fun onConnected(bundle: Bundle?) {
         mLocationRequest = LocationRequest()
         mLocationRequest = createLocationRequest()
-        if (mGoogleApiClient.isConnected){
+        if (mGoogleApiClient.isConnected) {
             LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this)
+        }
+        if (!visibility_switch.isChecked){
+            visibility_switch.isChecked = true
         }
     }
 
@@ -139,6 +147,18 @@ class MainActivity : AppCompatActivity(), MainView,
                 .addOnConnectionFailedListener(this)
                 .addApi(LocationServices.API)
                 .build()
+    }
+
+    private fun connectGoogleApiClient(){
+        if (!mGoogleApiClient.isConnected){
+            mGoogleApiClient.connect()
+        }
+    }
+
+    private fun disconnectGoogleApiClient() {
+        if (mGoogleApiClient.isConnected) {
+            mGoogleApiClient.disconnect()
+        }
     }
 
     override fun onConnectionSuspended(p0: Int) {
