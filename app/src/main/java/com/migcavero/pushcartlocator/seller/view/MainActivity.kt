@@ -3,14 +3,13 @@ package com.migcavero.pushcartlocator.seller.view
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.support.v4.app.ActivityCompat
-import android.support.v4.content.ContextCompat
-import android.util.Log
 import com.firebase.ui.auth.AuthUI
 import com.migcavero.pushcartlocator.seller.BuildConfig
 import com.migcavero.pushcartlocator.seller.R
@@ -20,6 +19,7 @@ import com.google.android.gms.maps.model.LatLng
 import com.migcavero.pushcartlocator.seller.presenter.MainPresenterImpl
 import android.content.IntentSender
 import android.location.Location
+import android.location.LocationManager
 import android.view.Menu
 import android.view.MenuItem
 import com.google.android.gms.common.ConnectionResult
@@ -52,12 +52,15 @@ class MainActivity : AppCompatActivity(), MainView,
 
         visibility_switch.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked) {
+                if (!checkGpsStatus()) {
+                    requestLocationSettings()
+                }
                 connectGoogleApiClient()
-                longSnackbar(main_linear_layout , R.string.visibility_on_message)
+                longSnackbar(main_linear_layout, R.string.visibility_on_message)
             } else {
-                mMainPresent.onVisibilitySwitchOff()
                 disconnectGoogleApiClient()
-                longSnackbar(main_linear_layout , R.string.visibility_off_message)
+                mMainPresent.onVisibilitySwitchOff()
+                longSnackbar(main_linear_layout, R.string.visibility_off_message)
             }
         }
 
@@ -135,7 +138,7 @@ class MainActivity : AppCompatActivity(), MainView,
         if (mGoogleApiClient.isConnected) {
             LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this)
         }
-        if (!visibility_switch.isChecked){
+        if (!visibility_switch.isChecked) {
             visibility_switch.isChecked = true
         }
     }
@@ -149,8 +152,8 @@ class MainActivity : AppCompatActivity(), MainView,
                 .build()
     }
 
-    private fun connectGoogleApiClient(){
-        if (!mGoogleApiClient.isConnected){
+    private fun connectGoogleApiClient() {
+        if (!mGoogleApiClient.isConnected) {
             mGoogleApiClient.connect()
         }
     }
@@ -244,6 +247,11 @@ class MainActivity : AppCompatActivity(), MainView,
                 }
             }
         }
+    }
+
+    private fun checkGpsStatus(): Boolean {
+        val mLocationManager: LocationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        return mLocationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
     }
 
 }
