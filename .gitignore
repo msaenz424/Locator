@@ -2,6 +2,7 @@ google-services.json
 google_maps_api.xml
 facebook.xml
 *.iml
+app/app.iml
 .gradle
 /local.properties
 /.idea
